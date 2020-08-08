@@ -17,9 +17,11 @@ pi2.set_PWM_frequency(17,50)
 la_des = [37.455848, 37.3434343, 37.34343444, 37.43434343]
 lo_des = [126.950599, 126.45555, 126.54444, 126.5455555]
 
-yaw = 0
+heading = 0
 lo = 0
 la = 0
+pre_lo = 0
+pre_la = 0
 
 def long_norm(longitude):
 	longitude = 37 + (longitude - 3700) / 60
@@ -41,13 +43,6 @@ def getGPS(gps_data):
 	global lo, la
 	lo = gps_data.longitude
 	la = gps_data.latitude
-    
-def getIMU(imu_data):
-	global yaw
-	orientation = imu_data.orientation
-	quat = (orientation.x, orientation.y, orientation.z, orientation.w)
-	euler = euler_from_quaternion(quat)
-	yaw = -1 * euler[2] / math.pi * 180 # yaw in degree
 
 def is_close(lo_diff, la_diff):
 	global close_cnt
@@ -61,7 +56,7 @@ def is_close(lo_diff, la_diff):
 
 
 def waypoint_follower(lo_des, la_des):
-	global lo, la, yaw
+	global lo, la, heading, pre_la, pre_lo
 
 	n_waypoint = len(la_des)
 	waypoint_idx = 0
@@ -81,7 +76,6 @@ def waypoint_follower(lo_des, la_des):
 
 	while not rospy.is_shutdown():
 		rospy.Subscriber("fix", NavSatFix, getGPS)
-		rospy.Subscriber("imu_data", Imu , getIMU)
 
 		lo_diff = lo_des[waypoint_idx] - lo
 		la_diff = la_des[waypoint_idx] - la
@@ -93,8 +87,22 @@ def waypoint_follower(lo_des, la_des):
 
 		# angle = math.atan(la_diff / lo_diff) / math.pi * 180
 
-		dangle = addAngle(yaw, -angle)
-		print(yaw)
+		lo_change = pre_lo - lo
+		la_change = pre_la - la
+
+		pre_lo = lo
+		pre_la = la
+
+		if ((lo_change == 0) or (la_change == 0)):
+			dangle = 0
+		else:
+			heading = math.acos(la_change / math.sqrt(la_change*la_change + lo_change*lo_change)) / math.pi * 180 # degree
+		
+			if (lo_change < 0):
+				heading = -1 * heading
+				dangle = addAngle(heading, -angle)
+		
+		print(heading)
 		print(angle)
 
 		dangle_pub.publish(dangle)

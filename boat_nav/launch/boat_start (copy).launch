@@ -1,0 +1,8 @@
+<launch>
+  <include file="$(find ydlidar_ros_driver)/launch/X4.launch"/>
+
+  <node pkg="ebimu_odometry" type="imupublisher.py" name="imupublisher" output="screen">
+  </node>
+  <include file="$(find hector_mapping)/launch/mapping_default.launch"/>
+
+</launch> 

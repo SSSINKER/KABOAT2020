@@ -1,5 +1,5 @@
 # KABOAT2020
-source code for KABOAT 2020
+source code for KABOAT 2020 </br>
 ros DISTRO: melodic
 OS: ubuntu 18.04LTS
 
@@ -25,4 +25,9 @@ $ sudo make install
 pip install pyserial
 ```
 
-3.
+3. geopy
+```sh
+pip install geopy
+```
+
+

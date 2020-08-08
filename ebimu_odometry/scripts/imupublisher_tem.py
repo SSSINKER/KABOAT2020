@@ -6,6 +6,7 @@ import serial
 import rospy
 import tf
 import time
+import re
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from sensor_msgs.msg import Imu
@@ -33,17 +34,28 @@ def talker():
     #ser.write('<lpf20>')
     #print(ser.readline())
 
-    imu_pub = rospy.Publisher("imu_data", Imu, queue_size=10)
-    odom_pub = rospy.Publisher("odom", Odometry, queue_size=50)
+    imu_pub = rospy.Publisher("imu_data", Imu, queue_size=5)
+    odom_pub = rospy.Publisher("odom", Odometry, queue_size=5)
     odom_broadcaster = tf.TransformBroadcaster()
     stab_broadcaster = tf.TransformBroadcaster()
     rate = rospy.Rate(10) # 10hz
     x = 0
     y = 0
+    prev_str = ser.readline() # when prev_str is bad input -> :(
     last_time = rospy.Time.now()
     while not rospy.is_shutdown():
         start_time = time.time()
-        str_list = ser.readline().split(',')
+        ser.reset_input_buffer()
+
+        str_temp = ser.readline()
+        comma_cnt = len([m.start() for m in re.finditer(',', str_temp)])
+        if (comma_cnt != 9):
+            str_list = prev_str
+        else:
+            str_list = str_temp
+            prev_str = str_temp
+        
+        str_list = str_list.split(',')
         str_list[0] = str_list[0].split('*')[1]
         imu_data.header.stamp = rospy.Time.now()
         imu_data.header.frame_id = "base_link"
@@ -83,7 +95,7 @@ def talker():
             rospy.Time.now(),
             "base_link",
             "base_footprint"
-        )        
+        )
 
         odom_data.pose.pose.orientation.z = float(str_list[0])
         odom_data.pose.pose.orientation.y = float(str_list[1])
@@ -118,9 +130,9 @@ def talker():
         odom_pub.publish(odom_data)
         last_time = current_time
 
+        prev_str = str_list
         end_time = time.time()
-        print("time elapsed: ")
-        print(end_time - start_time)
+        print("time elapsed: {}".format(end_time - start_time))
         rate.sleep()
 
 if __name__ == '__main__':

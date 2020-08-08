@@ -10,23 +10,31 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 
 def IMUParser(imuserial):
     str_list = imuserial.readline().rstrip().split(',')
-    th = float(str_list[2])
+    th = -float(str_list[2])
     vx = float(str_list[6])
     vy = float(str_list[7])
     vth = float(str_list[5])
     return th, vx, vy, vth
 
-rospy.loginfo("Starting odometry publisher...")
+print("Starting odometry publisher...")
 rospy.init_node('odometry_publisher')
 
 odom_pub = rospy.Publisher("odom", Odometry, queue_size=50)
 odom_broadcaster = tf.TransformBroadcaster()
 
-imu_port = "/dev/ttyUSB2"
+imu_port = "/dev/ttyUSB0"
 ser = serial.Serial(imu_port, 115200) # determine manually
-ser.write('<sof1>')
+ser.write('<sof2>')
+ser.readline()
+print(ser.readline())
 ser.write('<sog1>')
+print(ser.readline())
 ser.write('<soa5>')
+print(ser.readline())
+ser.write('<sem1>')
+print(ser.readline())
+ser.write('<sor100>')
+print(ser.readline())
 imu_data = IMUParser(ser)
 speed = 1
 x = 0.0
@@ -35,10 +43,10 @@ y = 0.0
 current_time = rospy.Time.now()
 last_time = rospy.Time.now()
 
-r = rospy.Rate(100)
+r = rospy.Rate(10)
 while not rospy.is_shutdown():
     current_time = rospy.Time.now()
-
+    ser.reset_input_buffer()
     imu_data = IMUParser(ser)
     th = imu_data[0]
     vx = imu_data[1]

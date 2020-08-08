@@ -118,7 +118,7 @@ def waypoint_follower(waypoints):
 		print(yaw)
 		print(angle)
 
-		dist = distance(lonlat([lo, la]), lonlat(waypoint))
+		dist = distance(lonlat(lo, la), lonlat(*waypoint)).m
 		temp = math.asin(MAX_DIST/dist) / math.pi * 180
 		if (temp < min_dangle):
 			min_dangle = temp
@@ -140,7 +140,7 @@ def waypoint_follower(waypoints):
 	   	#	print("left")
 
 		if (wp_idx < n_waypoint):
-			if (dist < MAX_DIST)):
+			if (dist < MAX_DIST):
 				close_cnt += 1
 		# else:
 			#stop ship

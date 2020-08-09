@@ -28,7 +28,7 @@ chronyc tracking
 if you have error writing to /etc/chrony/chrony.conf
 ```sh
 sudo chmod 777 /etc/chrony/chrony.conf
-``2
+```
 
 2. 
 sudo apt-get install libusb-dev

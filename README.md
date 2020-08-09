@@ -1,6 +1,6 @@
 # KABOAT2020
 source code for KABOAT 2020 </br>
-ros DISTRO: melodic
+ros DISTRO: melodic </br>
 OS: ubuntu 18.04LTS
 
 Following ROS packages are recommended to be installed previously.
